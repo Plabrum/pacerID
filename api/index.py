@@ -25,13 +25,19 @@ async def classify_medical_device(data: dict) -> MedicalDevice:
     )
 
 
+@get("/classify", tags=["system"])
+async def classify_health() -> dict:
+    return {"status": "ok"}
+
+
 @get("/", tags=["system"])
 async def health_check() -> dict:
     return {"status": "ok"}
 
 
 api = Router(
-    path="/api", route_handlers=[classify_medical_device, health_check]
+    path="/api",
+    route_handlers=[classify_medical_device, health_check, classify_health],
 )
 app = Litestar(
     route_handlers=[api], cors_config=CORSConfig(allow_origins=["*"])
