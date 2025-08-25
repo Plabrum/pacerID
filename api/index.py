@@ -25,7 +25,7 @@ async def classify_medical_device(data: dict) -> MedicalDevice:
     )
 
 
-@get("/health", tags=["system"])
+@get("/", tags=["system"])
 async def health_check() -> dict:
     return {"status": "ok"}
 
