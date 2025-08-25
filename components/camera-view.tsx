@@ -6,11 +6,11 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Camera, AlertCircle } from "lucide-react"
 
 interface CameraViewProps {
-  onImageCapture: (imageBlob: Blob) => void
+  onImageCaptureAction: (imageBlob: Blob) => void
   disabled?: boolean
 }
 
-export function CameraView({ onImageCapture, disabled = false }: CameraViewProps) {
+export function CameraView({ onImageCaptureAction: onImageCaptureAction, disabled = false }: CameraViewProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const streamRef = useRef<MediaStream | null>(null)
@@ -72,22 +72,18 @@ export function CameraView({ onImageCapture, disabled = false }: CameraViewProps
     canvas.toBlob(
       (blob) => {
         if (blob) {
-          onImageCapture(blob)
+          onImageCaptureAction(blob)
         }
       },
       "image/jpeg",
       0.8,
     )
-  }, [onImageCapture, disabled])
+  }, [onImageCaptureAction, disabled])
 
-  useEffect(() => {
-    startCamera()
-    return () => {
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach((track) => track.stop())
-      }
-    }
-  }, [startCamera])
+ useEffect(() => {
+  startCamera()
+  return () => stopCamera()
+}, [startCamera, stopCamera])
 
   if (error) {
     return (

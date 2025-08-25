@@ -4,7 +4,7 @@ import { useState, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Camera, Loader2, AlertCircle } from "lucide-react"
+import { Camera, Loader2, AlertCircle, Github, Mail } from "lucide-react"
 import { CameraView } from "@/components/camera-view"
 import { MedicalDeviceCard } from "@/components/medical-device-card"
 import { ThemeToggle } from "@/components/theme-toggle"
@@ -81,7 +81,7 @@ export default function MedicalDeviceScanner() {
             <CardDescription>Position your X-ray image in the camera view and tap capture</CardDescription>
           </CardHeader>
           <CardContent>
-            <CameraView onImageCapture={handleImageCapture} disabled={isProcessing} />
+            <CameraView onImageCaptureAction={handleImageCapture} disabled={isProcessing} />
           </CardContent>
         </Card>
 
@@ -157,6 +157,31 @@ export default function MedicalDeviceScanner() {
             </CardContent>
           </Card>
         )}
+        {/* Footer Card */}
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-2">
+                        <Github className="h-4 w-4" />
+                        <a
+                          href="https://github.com/Plabrum/pacerID"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="hover:text-foreground transition-colors underline"
+                        >
+                          View on GitHub
+                        </a>
+                      </div>
+                      <div className="hidden sm:block text-muted-foreground/50">•</div>
+                      <div className="flex items-center gap-2">
+                        <Mail className="h-4 w-4" />
+                        <a href="mailto:philip.labrum@gmail.com" className="hover:text-foreground transition-colors underline">
+                          philip.labrum@gmail.com
+                        </a>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
       </div>
     </div>
   )
