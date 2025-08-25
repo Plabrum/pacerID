@@ -15,6 +15,10 @@ export type PostApiClassifyData = {
 
 export type PostApiClassifyResponse = MedicalDevice;
 
+export type GetApiResponse = {
+    [key: string]: unknown;
+};
+
 export type $OpenApiTs = {
     '/api/classify': {
         post: {
@@ -33,6 +37,18 @@ export type $OpenApiTs = {
                     extra?: {
                         [key: string]: unknown;
                     } | null;
+                };
+            };
+        };
+    };
+    '/api': {
+        get: {
+            res: {
+                /**
+                 * Request fulfilled, document follows
+                 */
+                200: {
+                    [key: string]: unknown;
                 };
             };
         };

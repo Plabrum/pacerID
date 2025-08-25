@@ -3,7 +3,7 @@
 import type { CancelablePromise } from './core/CancelablePromise';
 import { OpenAPI } from './core/OpenAPI';
 import { request as __request } from './core/request';
-import type { PostApiClassifyData, PostApiClassifyResponse } from './types.gen';
+import type { PostApiClassifyData, PostApiClassifyResponse, GetApiResponse } from './types.gen';
 
 export class DevicesService {
     /**
@@ -22,6 +22,21 @@ export class DevicesService {
             errors: {
                 400: 'Bad request syntax or unsupported method'
             }
+        });
+    }
+    
+}
+
+export class SystemService {
+    /**
+     * HealthCheck
+     * @returns unknown Request fulfilled, document follows
+     * @throws ApiError
+     */
+    public static getApi(): CancelablePromise<GetApiResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api'
         });
     }
     
