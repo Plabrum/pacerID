@@ -33,4 +33,5 @@ async def health_check() -> dict:
 app = Litestar(
     route_handlers=[classify_medical_device, health_check],
     cors_config=CORSConfig(allow_origins=["*"]),
+    root_path="/api",
 )
