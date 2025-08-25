@@ -1,5 +1,5 @@
 import msgspec
-from litestar import Litestar, post
+from litestar import Litestar, get, post
 from litestar.config.cors import CORSConfig
 
 
@@ -25,7 +25,12 @@ async def classify_medical_device(data: dict) -> MedicalDevice:
     )
 
 
+@get("/health", tags=["system"])
+async def health_check() -> dict:
+    return {"status": "ok"}
+
+
 app = Litestar(
-    route_handlers=[classify_medical_device],
+    route_handlers=[classify_medical_device, health_check],
     cors_config=CORSConfig(allow_origins=["*"]),
 )
