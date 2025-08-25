@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "public/addin-dist",
+    "lib": ["DOM", "ES2020"],
+    "types": ["office-js"],
+    "module": "ESNext",
+    "target": "ES2020"
+  },
+  "include": ["public/addin"]
+}
