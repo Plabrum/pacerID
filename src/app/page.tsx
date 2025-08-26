@@ -10,7 +10,7 @@ import { MedicalDeviceCard } from "@/components/medical-device-card"
 import { ThemeToggle } from "@/components/theme-toggle"
 
 import { useDevicesServicePostApiClassify } from "../openapi/queries"
-import type { ApiError } from "../openapi/requests"
+import type { ApiError, MedicalDeviceResult } from "../openapi/requests"
 import { FileUpload } from "@/components/file-upload"
 
 export default function MedicalDeviceScanner() {
@@ -23,7 +23,7 @@ export default function MedicalDeviceScanner() {
   })
 
   const isProcessing = classifyMutation.isPending
-  const results = classifyMutation.data ?? null
+  const results: MedicalDeviceResult[] |null = classifyMutation.data ?? null
 
   const handleImageCapture = useCallback(
     async (imageBlob: Blob) => {
