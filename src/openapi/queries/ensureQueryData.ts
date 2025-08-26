@@ -3,4 +3,4 @@
 import { type QueryClient } from "@tanstack/react-query";
 import { SystemService } from "../requests/services.gen";
 import * as Common from "./common";
-export const ensureUseSystemServiceGetApiData = (queryClient: QueryClient) => queryClient.ensureQueryData({ queryKey: Common.UseSystemServiceGetApiKeyFn(), queryFn: () => SystemService.getApi() });
+export const ensureUseSystemServiceGetApiHealthData = (queryClient: QueryClient) => queryClient.ensureQueryData({ queryKey: Common.UseSystemServiceGetApiHealthKeyFn(), queryFn: () => SystemService.getApiHealth() });

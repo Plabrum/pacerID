@@ -1,74 +1,91 @@
 "use client"
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { ExternalLink, ImageIcon } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { ExternalLink } from "lucide-react"
 import Image from "next/image"
-import { MedicalDevice } from "@/src/openapi/requests"
-
-
+import { MedicalDeviceResult } from "@/src/openapi/requests"
 
 interface MedicalDeviceCardProps {
-  device: MedicalDevice
-  capturedImage?: string | null
+  results: MedicalDeviceResult[]
 }
 
-export function MedicalDeviceCard({ device, capturedImage }: MedicalDeviceCardProps) {
+export function MedicalDeviceCard({ results }: MedicalDeviceCardProps) {
   return (
-    <div className="grid gap-6 md:grid-cols-2">
-      {/* Captured Image */}
-      {capturedImage && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <ImageIcon className="h-5 w-5" />
-              Captured Image
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="relative aspect-video bg-muted rounded-lg overflow-hidden">
-              <Image src={capturedImage || "/placeholder.svg"} alt="Captured X-ray" fill className="object-cover" />
+    <Card>
+      <CardHeader>
+        <CardTitle>Classification Results</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {results.map((device, index) => (
+          <div key={index} className={`space-y-3 ${index > 0 ? "pt-4 border-t" : ""}`}>
+            <div className="flex items-center justify-between">
+              <h4 className="font-medium text-sm">{device.name}</h4>
+              <Badge variant={index === 0 ? "default" : "secondary"} className="ml-2">
+                {device.confidence}%
+              </Badge>
             </div>
-          </CardContent>
-        </Card>
-      )}
 
-      {/* Device Information */}
-      <Card>
-        <CardHeader>
-          <CardTitle>{device.name}</CardTitle>
-          <CardDescription>Identified Medical Device</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Device Image */}
-          {device.image && (
-            <div className="relative aspect-video bg-muted rounded-lg overflow-hidden">
-<Image
-  src={device.image || "/placeholder.svg"}
-  alt={device.name}
-  fill
-  className="object-cover rounded-xl"
-/>
-            </div>
-          )}
+            {/* Only show detailed info for top result */}
+            {index === 0 && (
+              <div className="space-y-3">
+                <div className="flex gap-4">
+                  {device.image && (
+                    <div className="relative aspect-square bg-muted rounded-lg overflow-hidden flex-shrink-0 w-20">
+                      <Image src={device.image || "/placeholder.svg"} alt={device.name} fill className="object-cover" />
+                    </div>
+                  )}
 
-          {/* Description */}
-          <div>
-            <h4 className="font-medium mb-2">Description</h4>
-            <p className="text-sm text-muted-foreground leading-relaxed">{device.description}</p>
+                  <div className="flex-1 min-w-0">
+                    <div className="grid grid-cols-2 gap-2 h-full">
+                      {device.manufacturer && (
+                        <div className="bg-muted/50 rounded-lg p-2 text-center flex flex-col justify-center">
+                          <div className="text-xs text-muted-foreground">Manufacturer</div>
+                          <div className="font-medium text-sm truncate">{device.manufacturer}</div>
+                        </div>
+                      )}
+                      {device.type && (
+                        <div className="bg-muted/50 rounded-lg p-2 text-center flex flex-col justify-center">
+                          <div className="text-xs text-muted-foreground">Type</div>
+                          <div className="font-medium text-sm truncate">{device.type}</div>
+                        </div>
+                      )}
+                      {device.leads && (
+                        <div className="bg-muted/50 rounded-lg p-2 text-center flex flex-col justify-center">
+                          <div className="text-xs text-muted-foreground">Leads</div>
+                          <div className="font-medium text-sm truncate">{device.leads}</div>
+                        </div>
+                      )}
+                      {device.link && (
+                        <a
+                          href={device.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="bg-muted/50 hover:bg-muted/70 transition-colors rounded-lg p-2 text-center flex flex-col justify-center cursor-pointer"
+                        >
+                          <div className="text-xs text-muted-foreground">Learn More</div>
+                          <div className="font-medium text-sm flex items-center justify-center gap-1">
+                            <ExternalLink className="h-3 w-3" />
+                            Visit
+                          </div>
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {device.description && (
+                  <div className="bg-muted/30 rounded-lg p-3">
+                    <div className="font-medium text-sm mb-1">Description</div>
+                    <p className="text-xs text-muted-foreground leading-relaxed">{device.description}</p>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
-
-          {/* Learn More Link */}
-          {device.link && (
-            <Button asChild variant="outline" className="w-full bg-transparent">
-              <a href={device.link} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
-                <ExternalLink className="h-4 w-4" />
-                Learn More
-              </a>
-            </Button>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+        ))}
+      </CardContent>
+    </Card>
   )
 }
+

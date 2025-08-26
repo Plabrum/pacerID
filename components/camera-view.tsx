@@ -3,14 +3,16 @@
 import { useState, useRef, useEffect, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Camera, AlertCircle } from "lucide-react"
+import { Camera, AlertCircle, RotateCcw } from "lucide-react"
 
 interface CameraViewProps {
   onImageCaptureAction: (imageBlob: Blob) => void
   disabled?: boolean
+  capturedImage?: string | null
+  onClear?: () => void
 }
 
-export function CameraView({ onImageCaptureAction: onImageCaptureAction, disabled = false }: CameraViewProps) {
+export function CameraView({  onImageCaptureAction, disabled = false, capturedImage, onClear }: CameraViewProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const streamRef = useRef<MediaStream | null>(null)
@@ -24,11 +26,7 @@ export function CameraView({ onImageCaptureAction: onImageCaptureAction, disable
       setIsLoading(true)
 
       const mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: "environment", // Use back camera on mobile
-          width: { ideal: 1280 },
-          height: { ideal: 720 },
-        },
+        video: true,
       })
 
       if (videoRef.current) {
@@ -61,6 +59,12 @@ export function CameraView({ onImageCaptureAction: onImageCaptureAction, disable
 
     if (!context) return
 
+    // Ensure video has loaded and has dimensions
+    if (video.videoWidth === 0 || video.videoHeight === 0) {
+      setTimeout(() => captureImage(), 100)
+      return
+    }
+
     // Set canvas dimensions to match video
     canvas.width = video.videoWidth
     canvas.height = video.videoHeight
@@ -72,18 +76,29 @@ export function CameraView({ onImageCaptureAction: onImageCaptureAction, disable
     canvas.toBlob(
       (blob) => {
         if (blob) {
+          stopCamera()
           onImageCaptureAction(blob)
         }
       },
       "image/jpeg",
       0.8,
     )
-  }, [onImageCaptureAction, disabled])
+  }, [onImageCaptureAction, disabled, stopCamera])
 
- useEffect(() => {
-  startCamera()
-  return () => stopCamera()
-}, [startCamera, stopCamera])
+  useEffect(() => {
+    startCamera()
+    return () => {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => track.stop())
+      }
+    }
+  }, [startCamera])
+
+  useEffect(() => {
+    if (!capturedImage && !stream && !error) {
+      startCamera()
+    }
+  }, [capturedImage, stream, error, startCamera])
 
   if (error) {
     return (
@@ -101,8 +116,8 @@ export function CameraView({ onImageCaptureAction: onImageCaptureAction, disable
 
   return (
     <div className="space-y-4">
-      <div className="relative bg-black rounded-lg overflow-hidden aspect-video">
-        {isLoading && (
+      <div className="relative bg-black rounded-lg overflow-hidden aspect-[4/3]">
+        {isLoading && !capturedImage && (
           <div className="absolute inset-0 flex items-center justify-center bg-muted">
             <div className="text-center">
               <Camera className="h-12 w-12 mx-auto mb-2 text-muted-foreground" />
@@ -111,29 +126,39 @@ export function CameraView({ onImageCaptureAction: onImageCaptureAction, disable
           </div>
         )}
 
-        <video
-          ref={videoRef}
-          autoPlay
-          playsInline
-          muted
-          className="w-full h-full object-cover"
-          onLoadedMetadata={() => setIsLoading(false)}
-        />
+        {capturedImage ? (
+        /* eslint-disable-next-line @next/next/no-img-element */
+          <img src={capturedImage || "/placeholder.svg"} alt="Captured X-ray" className="w-full h-full object-cover" />
+        ) : (
+          <video
+            ref={videoRef}
+            autoPlay
+            playsInline
+            muted
+            className="w-full h-full object-cover"
+            onLoadedMetadata={() => {
+              setIsLoading(false)
+            }}
+          />
+        )}
 
-        {/* Overlay guide */}
-        <div className="absolute inset-4 border-2 border-white/50 rounded-lg pointer-events-none">
-          <div className="absolute top-2 left-2 text-white text-xs bg-black/50 px-2 py-1 rounded">
-            Position X-ray here
-          </div>
-        </div>
+        {!capturedImage && (
+          <div className="absolute inset-4 border-2 border-white/50 rounded-lg pointer-events-none"></div>
+        )}
       </div>
 
-      <Button onClick={captureImage} disabled={disabled || isLoading || !stream} size="lg" className="w-full">
-        <Camera className="h-5 w-5 mr-2" />
-        {disabled ? "Processing..." : "Capture Image"}
-      </Button>
+      {capturedImage ? (
+        <Button onClick={onClear} size="lg" className="w-full bg-transparent" variant="outline">
+          <RotateCcw className="h-5 w-5 mr-2" />
+          Clear & Retake
+        </Button>
+      ) : (
+        <Button onClick={captureImage} disabled={disabled || isLoading || !stream} size="lg" className="w-full">
+          <Camera className="h-5 w-5 mr-2" />
+          {disabled ? "Processing..." : "Capture Image"}
+        </Button>
+      )}
 
-      {/* Hidden canvas for image capture */}
       <canvas ref={canvasRef} className="hidden" />
     </div>
   )

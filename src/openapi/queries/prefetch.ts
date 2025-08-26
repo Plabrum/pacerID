@@ -3,4 +3,4 @@
 import { type QueryClient } from "@tanstack/react-query";
 import { SystemService } from "../requests/services.gen";
 import * as Common from "./common";
-export const prefetchUseSystemServiceGetApi = (queryClient: QueryClient) => queryClient.prefetchQuery({ queryKey: Common.UseSystemServiceGetApiKeyFn(), queryFn: () => SystemService.getApi() });
+export const prefetchUseSystemServiceGetApiHealth = (queryClient: QueryClient) => queryClient.prefetchQuery({ queryKey: Common.UseSystemServiceGetApiHealthKeyFn(), queryFn: () => SystemService.getApiHealth() });
