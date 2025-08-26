@@ -1,69 +1,52 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent,  CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import {  Loader2, AlertCircle, Github, Mail } from "lucide-react"
+import { Loader2, AlertCircle, Github, Mail } from "lucide-react"
 import { CameraView } from "@/components/camera-view"
 import { MedicalDeviceCard } from "@/components/medical-device-card"
 import { ThemeToggle } from "@/components/theme-toggle"
 
 import { useDevicesServicePostApiClassify } from "../openapi/queries"
-import type { ApiError, MedicalDeviceResult } from "../openapi/requests"
 import { FileUpload } from "@/components/file-upload"
 
 export default function MedicalDeviceScanner() {
-  const [error, setError] = useState<string | null>(null)
   const [capturedImage, setCapturedImage] = useState<string | null>(null)
 
-  // React Query mutation
+  // React Query mutation - let it handle all state
   const classifyMutation = useDevicesServicePostApiClassify({
     retry: 1,
   })
 
-  const isProcessing = classifyMutation.isPending
-  const results: MedicalDeviceResult[] |null = classifyMutation.data ?? null
+  const { isPending, error, data: results, mutateAsync, reset } = classifyMutation
 
-  const handleImageCapture = useCallback(
-    async (imageBlob: Blob) => {
-      setError(null)
+  const handleImageCapture = async (imageBlob: Blob) => {
+    // Show local preview immediately
+    const imageUrl = URL.createObjectURL(imageBlob)
+    setCapturedImage(imageUrl)
 
-      // show local preview immediately
-      const imageUrl = URL.createObjectURL(imageBlob)
-      setCapturedImage(imageUrl)
+    // Build multipart form data
+    const formData = new FormData()
+    formData.append("image", imageBlob, "capture.jpg")
 
-      // build multipart form data
-      const formData = new FormData()
-      formData.append("image", imageBlob, "capture.jpg")
+    // Let React Query handle the error state
+    await mutateAsync({
+      requestBody: formData as unknown as { [k: string]: unknown },
+    })
+  }
 
-      try {
-        // await the POST
-        await classifyMutation.mutateAsync({
-          requestBody: formData as unknown as { [k: string]: unknown },
-        })
-      } catch (err) {
-        const maybe = err as ApiError | { message?: string }
-        setError(
-          (maybe as ApiError)?.message ??
-            maybe?.message ??
-            "Failed to classify image"
-        )
-      }
-    },
-    [classifyMutation]
-  )
-
-  const handleReset = useCallback(() => {
-    setError(null)
-    
-    // clean up object URL if it exists
-      if (capturedImage) {
-        URL.revokeObjectURL(capturedImage)
-      }
+  const handleReset = () => {
+    // Clean up object URL if it exists
+    if (capturedImage) {
+      URL.revokeObjectURL(capturedImage)
+    }
     setCapturedImage(null)
-    classifyMutation.reset()
-  }, [classifyMutation, capturedImage])
+    reset()
+  }
+
+  const errorMessage = error instanceof Error ? error.message : 'Failed to classify image'
 
   return (
     <div className="min-h-screen bg-background">
@@ -90,17 +73,22 @@ export default function MedicalDeviceScanner() {
               )}
               <CameraView
                 onImageCaptureAction={handleImageCapture}
-                disabled={isProcessing}
+                disabled={isPending}
                 capturedImage={capturedImage}
                 onClear={handleReset}
               />
             </div>
 
             {/* File Upload Section */}
-                        {!capturedImage && <FileUpload onFileUploadAction={handleImageCapture} disabled={isProcessing} />}
+            {!capturedImage && (
+              <FileUpload
+                onFileUploadAction={handleImageCapture}
+                disabled={isPending}
+              />
+            )}
 
             {/* Instructions */}
-            {!results && !isProcessing && !capturedImage && (
+            {!results && !isPending && !capturedImage && (
               <Card>
                 <CardHeader className="pb-3">
                   <CardTitle className="text-lg">How to Use</CardTitle>
@@ -138,7 +126,7 @@ export default function MedicalDeviceScanner() {
           {/* Right Column - Results and Status */}
           <div className="space-y-4">
             {/* Processing State */}
-            {isProcessing && (
+            {isPending && (
               <Card>
                 <CardContent className="pt-6">
                   <div className="flex items-center justify-center gap-3 text-muted-foreground">
@@ -150,10 +138,10 @@ export default function MedicalDeviceScanner() {
             )}
 
             {/* Error State */}
-            {error && (
+            {errorMessage && (
               <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{error}</AlertDescription>
+                <AlertDescription>{errorMessage}</AlertDescription>
               </Alert>
             )}
 
@@ -172,7 +160,7 @@ export default function MedicalDeviceScanner() {
             )}
 
             {/* Placeholder for desktop when no results */}
-            {!results && !isProcessing && !error && (
+            {!results && !isPending && !errorMessage && (
               <div className="hidden lg:block">
                 <Card className="border-dashed">
                   <CardContent className="pt-6">
@@ -220,4 +208,3 @@ export default function MedicalDeviceScanner() {
     </div>
   )
 }
-
