@@ -3,14 +3,14 @@
 import type { CancelablePromise } from './core/CancelablePromise';
 import { OpenAPI } from './core/OpenAPI';
 import { request as __request } from './core/request';
-import type { PostApiClassifyData, PostApiClassifyResponse, GetApiResponse } from './types.gen';
+import type { PostApiClassifyData, PostApiClassifyResponse, GetApiHealthResponse } from './types.gen';
 
 export class DevicesService {
     /**
      * ClassifyMedicalDevice
      * @param data The data for the request.
      * @param data.requestBody
-     * @returns MedicalDevice Document created, URL follows
+     * @returns MedicalDeviceResult Document created, URL follows
      * @throws ApiError
      */
     public static postApiClassify(data: PostApiClassifyData): CancelablePromise<PostApiClassifyResponse> {
@@ -33,10 +33,10 @@ export class SystemService {
      * @returns unknown Request fulfilled, document follows
      * @throws ApiError
      */
-    public static getApi(): CancelablePromise<GetApiResponse> {
+    public static getApiHealth(): CancelablePromise<GetApiHealthResponse> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api'
+            url: '/api/health'
         });
     }
     
