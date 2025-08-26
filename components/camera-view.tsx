@@ -26,7 +26,8 @@ export function CameraView({  onImageCaptureAction, disabled = false, capturedIm
       setIsLoading(true)
 
       const mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: true,
+        video: {facingMode:'environment'},
+        audio: false,
       })
 
       if (videoRef.current) {
