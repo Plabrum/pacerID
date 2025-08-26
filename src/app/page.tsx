@@ -10,14 +10,15 @@ import { MedicalDeviceCard } from "@/components/medical-device-card"
 import { ThemeToggle } from "@/components/theme-toggle"
 
 import { useDevicesServicePostApiClassify } from "../openapi/queries"
-import type { ApiError, MedicalDevice } from "../openapi/requests"
+import type { ApiError } from "../openapi/requests"
+import { FileUpload } from "@/components/file-upload"
 
 export default function MedicalDeviceScanner() {
   const [error, setError] = useState<string | null>(null)
   const [capturedImage, setCapturedImage] = useState<string | null>(null)
 
   // React Query mutation
-  const classifyMutation = useDevicesServicePostApiClassify<MedicalDevice, ApiError>({
+  const classifyMutation = useDevicesServicePostApiClassify({
     retry: 1,
   })
 
@@ -95,6 +96,9 @@ export default function MedicalDeviceScanner() {
               />
             </div>
 
+            {/* File Upload Section */}
+                        {!capturedImage && <FileUpload onFileUploadAction={handleImageCapture} disabled={isProcessing} />}
+
             {/* Instructions */}
             {!results && !isProcessing && !capturedImage && (
               <Card>
@@ -112,7 +116,7 @@ export default function MedicalDeviceScanner() {
                     <span className="flex-shrink-0 w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xs font-medium">
                       2
                     </span>
-                    <span>Position your X-ray image clearly in the camera view</span>
+                    <span>Position your X-ray image clearly in the camera view or upload a file</span>
                   </div>
                   <div className="flex gap-3">
                     <span className="flex-shrink-0 w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xs font-medium">
