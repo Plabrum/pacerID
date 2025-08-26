@@ -46,7 +46,6 @@ export default function MedicalDeviceScanner() {
     reset()
   }
 
-  const errorMessage = error instanceof Error ? error.message : 'Failed to classify image'
 
   return (
     <div className="min-h-screen bg-background">
@@ -138,10 +137,12 @@ export default function MedicalDeviceScanner() {
             )}
 
             {/* Error State */}
-            {errorMessage && (
+            {!!error && (
               <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{errorMessage}</AlertDescription>
+                <AlertDescription>
+                  {error instanceof Error ? error.message : 'Failed to classify image'}
+                </AlertDescription>
               </Alert>
             )}
 
@@ -160,7 +161,7 @@ export default function MedicalDeviceScanner() {
             )}
 
             {/* Placeholder for desktop when no results */}
-            {!results && !isPending && !errorMessage && (
+            {!results && !isPending && !error && (
               <div className="hidden lg:block">
                 <Card className="border-dashed">
                   <CardContent className="pt-6">
