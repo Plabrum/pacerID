@@ -2,6 +2,10 @@
 
 export type DeviceType = 'Pacemaker' | 'ICD' | 'CRT-P' | 'CRT-D' | 'Other';
 
+export type ImageForm = {
+    image: (Blob | File);
+};
+
 export type Manufacturer = 'Biotronik' | 'Medtronic' | 'Boston Scientific' | 'Abbott' | 'Other';
 
 export type MedicalDeviceResult = {
@@ -16,16 +20,10 @@ export type MedicalDeviceResult = {
 };
 
 export type PostApiClassifyData = {
-    requestBody: {
-        [key: string]: unknown;
-    };
+    formData: ImageForm;
 };
 
 export type PostApiClassifyResponse = Array<MedicalDeviceResult>;
-
-export type GetApiHealthResponse = {
-    [key: string]: unknown;
-};
 
 export type GetApiResponse = {
     [key: string]: unknown;
@@ -53,7 +51,7 @@ export type $OpenApiTs = {
             };
         };
     };
-    '/api/health': {
+    '/api': {
         get: {
             res: {
                 /**

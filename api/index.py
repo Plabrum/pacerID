@@ -1,80 +1,29 @@
-import enum
-from typing import Optional
+from dataclasses import dataclass
+from typing import Annotated
 
-import msgspec
 from litestar import Litestar, Router, get, post
 from litestar.config.cors import CORSConfig
+from litestar.datastructures import UploadFile
+from litestar.enums import RequestEncodingType
+from litestar.params import Body
+
+from api.classifier.service import PacemakerClassifier
+from api.classifier.transformer import serialize_medical_devices
+from api.types import MedicalDeviceResult
 
 
-class DeviceType(enum.Enum):
-    PACEMAKER = "Pacemaker"
-    ICD = "ICD"
-    CRT_P = "CRT-P"
-    CRT_D = "CRT-D"
-    OTHER = "Other"
+@dataclass
+class ImageForm:
+    image: UploadFile
 
 
-class Manufacturer(enum.Enum):
-    BIOTRONIK = "Biotronik"
-    MEDTRONIC = "Medtronic"
-    BOSTON_SCI = "Boston Scientific"
-    ABBOTT = "Abbott"
-    OTHER = "Other"
-
-
-class MedicalDeviceResult(msgspec.Struct):
-    name: str
-    type: DeviceType
-    manufacturer: Manufacturer
-    confidence: float
-    link: str | None = None
-    description: str | None = None
-    image: str | None = None
-    leads: int | None = None
-
-
-mock_response: list[MedicalDeviceResult] = [
-    MedicalDeviceResult(
-        name="Biotronik Pacemaker with 2 Leads",
-        manufacturer=Manufacturer.BIOTRONIK,
-        type=DeviceType.PACEMAKER,
-        leads=2,
-        image="/images/azure-mri-surescan-pacemaker.jpeg",
-        link="https://www.biotronik.com/en-us/products/crt-p",
-        description=(
-            "Subcutaneous dual-chamber device, est. lifespan 8–12 years, "
-            "interrogation via wireless telemetry"
-        ),
-        confidence=0.95,
-    ),
-    MedicalDeviceResult(
-        name="Medtronic ICD",
-        manufacturer=Manufacturer.MEDTRONIC,
-        type=DeviceType.ICD,
-        leads=1,
-        image="/images/medtronic-icd-implantable-cardioverter-defibrillat.png",
-        link=(
-            "https://www.medtronic.com/us-en/healthcare-professionals/products/"
-            "cardiac-rhythm/icds.html"
-        ),
-        description=(
-            "Single-lead implantable cardioverter defibrillator, est. lifespan 6–8 years, "
-            "remote monitoring capable"
-        ),
-        confidence=0.5,
-    ),
-]
-
-
-@post("/classify", tags=["devices"])
-async def classify_medical_device(data: dict) -> list[MedicalDeviceResult]:
-    print(f"looking at {data}")
-    return mock_response
-
-
-@get("/classify", tags=["system"])
-async def classify_health() -> dict:
-    return {"status": "ok"}
+@post("/classify")
+async def classify_medical_device(
+    data: Annotated[ImageForm, Body(media_type=RequestEncodingType.MULTI_PART)],
+) -> list[MedicalDeviceResult]:
+    img_bytes = await data.image.read()
+    results = PacemakerClassifier.classify(img_bytes)
+    return serialize_medical_devices(results)
 
 
 @get("/", tags=["system"])

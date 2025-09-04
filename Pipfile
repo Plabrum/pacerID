@@ -10,10 +10,13 @@ requests = "*"
 pydantic = "*"
 uvicorn = "*"
 litestar = {version = "*", extras = ["standard"]}
+tensorflow = "*"
 
 [dev-packages]
 ipykernel = "*"
+types-tensorflow = "*"
+tensorflow-macos = "*"
+tensorflow-metal = "*"
 
 [requires]
 python_version = "3.12"
-

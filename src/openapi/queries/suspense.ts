@@ -3,4 +3,4 @@
 import { UseQueryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { SystemService } from "../requests/services.gen";
 import * as Common from "./common";
-export const useSystemServiceGetApiHealthSuspense = <TData = Common.SystemServiceGetApiHealthDefaultResponse, TError = unknown, TQueryKey extends Array<unknown> = unknown[]>(queryKey?: TQueryKey, options?: Omit<UseQueryOptions<TData, TError>, "queryKey" | "queryFn">) => useSuspenseQuery<TData, TError>({ queryKey: Common.UseSystemServiceGetApiHealthKeyFn(queryKey), queryFn: () => SystemService.getApiHealth() as TData, ...options });
+export const useSystemServiceGetApiSuspense = <TData = Common.SystemServiceGetApiDefaultResponse, TError = unknown, TQueryKey extends Array<unknown> = unknown[]>(queryKey?: TQueryKey, options?: Omit<UseQueryOptions<TData, TError>, "queryKey" | "queryFn">) => useSuspenseQuery<TData, TError>({ queryKey: Common.UseSystemServiceGetApiKeyFn(queryKey), queryFn: () => SystemService.getApi() as TData, ...options });

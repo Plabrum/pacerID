@@ -6,6 +6,19 @@ export const $DeviceType = {
     title: 'DeviceType'
 } as const;
 
+export const $ImageForm = {
+    properties: {
+        image: {
+            type: 'string',
+            format: 'binary',
+            contentMediaType: 'application/octet-stream'
+        }
+    },
+    type: 'object',
+    required: ['image'],
+    title: 'ImageForm'
+} as const;
+
 export const $Manufacturer = {
     type: 'string',
     enum: ['Biotronik', 'Medtronic', 'Boston Scientific', 'Abbott', 'Other'],

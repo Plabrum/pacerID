@@ -9,14 +9,14 @@ import { CameraView } from "@/components/camera-view"
 import { MedicalDeviceCard } from "@/components/medical-device-card"
 import { ThemeToggle } from "@/components/theme-toggle"
 
-import { useDevicesServicePostApiClassify } from "../openapi/queries"
 import { FileUpload } from "@/components/file-upload"
+import { useDefaultServicePostApiClassify } from "../openapi/queries"
 
 export default function MedicalDeviceScanner() {
   const [capturedImage, setCapturedImage] = useState<string | null>(null)
 
   // React Query mutation - let it handle all state
-  const classifyMutation = useDevicesServicePostApiClassify({
+  const classifyMutation = useDefaultServicePostApiClassify({
     retry: 1,
   })
 
@@ -27,14 +27,9 @@ export default function MedicalDeviceScanner() {
     const imageUrl = URL.createObjectURL(imageBlob)
     setCapturedImage(imageUrl)
 
-    // Build multipart form data
-    const formData = new FormData()
-    formData.append("image", imageBlob, "capture.jpg")
-
-    // Let React Query handle the error state
     await mutateAsync({
-      requestBody: formData as unknown as { [k: string]: unknown },
-    })
+      formData: { image: imageBlob}, // <-- object matching ImageForm, not FormData
+    });
   }
 
   const handleReset = () => {

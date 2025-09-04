@@ -3,13 +3,13 @@
 import type { CancelablePromise } from './core/CancelablePromise';
 import { OpenAPI } from './core/OpenAPI';
 import { request as __request } from './core/request';
-import type { PostApiClassifyData, PostApiClassifyResponse, GetApiHealthResponse } from './types.gen';
+import type { PostApiClassifyData, PostApiClassifyResponse, GetApiResponse } from './types.gen';
 
-export class DevicesService {
+export class DefaultService {
     /**
      * ClassifyMedicalDevice
      * @param data The data for the request.
-     * @param data.requestBody
+     * @param data.formData
      * @returns MedicalDeviceResult Document created, URL follows
      * @throws ApiError
      */
@@ -17,8 +17,8 @@ export class DevicesService {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/api/classify',
-            body: data.requestBody,
-            mediaType: 'application/json',
+            formData: data.formData,
+            mediaType: 'multipart/form-data',
             errors: {
                 400: 'Bad request syntax or unsupported method'
             }
@@ -33,10 +33,10 @@ export class SystemService {
      * @returns unknown Request fulfilled, document follows
      * @throws ApiError
      */
-    public static getApiHealth(): CancelablePromise<GetApiHealthResponse> {
+    public static getApi(): CancelablePromise<GetApiResponse> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/health'
+            url: '/api'
         });
     }
     
