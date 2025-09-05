@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { ExternalLink } from 'lucide-react'
 import Image from 'next/image'
 import { MedicalDeviceResult } from '@/src/openapi/requests'
+import { DeviceInfoBox } from './device-info-box'
 
 interface MedicalDeviceCardProps {
   results: MedicalDeviceResult[]
@@ -119,19 +120,4 @@ export function MedicalDeviceCard({ results }: MedicalDeviceCardProps) {
       </CardContent>
     </Card>
   )
-
-  interface DeviceInfoBoxProps {
-    label: string
-    value: string | number
-    className?: string
-  }
-
-  function DeviceInfoBox({ label, value, className = '' }: DeviceInfoBoxProps) {
-    return (
-      <div className={`bg-muted/50 flex flex-col justify-center rounded-lg p-3 text-center ${className}`}>
-        <div className="text-muted-foreground text-xs font-medium">{label}</div>
-        <div className="mt-1 truncate text-sm font-semibold">{value}</div>
-      </div>
-    )
-  }
 }

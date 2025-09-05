@@ -2,7 +2,7 @@
 
 interface DeviceInfoBoxProps {
   label: string
-  value: string
+  value: string | number
   className?: string
 }
 

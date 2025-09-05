@@ -58,7 +58,7 @@ export default function MedicalDeviceScanner() {
         {/* Main Content */}
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           {/* Left Column - Input Methods */}
-          <div className="space-y-6">
+          <div className="flex flex-col gap-6">
             {!capturedImage && (
               <div className="h-48">
                 <FileUpload
@@ -137,7 +137,7 @@ export default function MedicalDeviceScanner() {
 
             {/* Results Section */}
             {results && (
-              <div className="space-y-4">
+              <div className="flex flex-col gap-4">
                 <div className="flex items-center justify-between">
                   <h2 className="text-xl font-semibold">Identification Result</h2>
                   <Button

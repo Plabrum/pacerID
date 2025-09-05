@@ -20,37 +20,92 @@ export function CameraView({
   onClear,
   autoStart = true
 }: CameraViewProps) {
-  const videoRef = useRef<HTMLVideoElement>(null)
-  const canvasRef = useRef<HTMLCanvasElement>(null)
   const streamRef = useRef<MediaStream | null>(null)
+  const videoRef = useRef<HTMLVideoElement | null>(null)
+  const canvasRef = useRef<HTMLCanvasElement>(null)
   const [stream, setStream] = useState<MediaStream | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [cameraStarted, setCameraStarted] = useState(false)
 
+  // Small helpers
+  const hasMediaDevices = () =>
+    typeof navigator !== 'undefined' &&
+    !!navigator.mediaDevices &&
+    typeof navigator.mediaDevices.getUserMedia === 'function'
+
+  const isNamedError = (e: unknown): e is { name: string; message?: string } => {
+    return typeof e === 'object' && e !== null && 'name' in e && typeof (e as { name: unknown }).name === 'string'
+  }
   const startCamera = useCallback(async () => {
+    setError(null)
+    setIsLoading(true)
+
     try {
-      setError(null)
-      setIsLoading(true)
       setCameraStarted(true)
 
-      const mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment' },
-        audio: false
-      })
+      if (!hasMediaDevices()) {
+        setCameraStarted(false)
+        setError(
+          'This browser does not support camera access. Try a different browser, enable HTTPS, or use Continuity Camera with your iPhone.'
+        )
+        return
+      }
 
-      if (videoRef.current) {
-        videoRef.current.srcObject = mediaStream
+      const videoInputs: MediaDeviceInfo[] =
+        typeof navigator.mediaDevices.enumerateDevices === 'function'
+          ? (await navigator.mediaDevices.enumerateDevices()).filter(d => d.kind === 'videoinput')
+          : []
+
+      const firstInput = videoInputs[0]
+
+      const constraints: MediaStreamConstraints = {
+        audio: false,
+        video: firstInput
+          ? { deviceId: { exact: firstInput.deviceId }, facingMode: 'environment' }
+          : { facingMode: { ideal: 'environment' } }
+      }
+
+      const mediaStream = await navigator.mediaDevices.getUserMedia(constraints)
+
+      const videoEl = videoRef.current
+      if (videoEl) {
+        videoEl.srcObject = mediaStream
         streamRef.current = mediaStream
         setStream(mediaStream)
+      } else {
+        // Stop tracks if we cannot attach them
+        mediaStream.getTracks().forEach(track => track.stop())
+        throw new Error('Video element not ready')
       }
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Camera access error:', err)
-      setError('Unable to access camera. Please check permissions and try again.')
+
+      if (isNamedError(err)) {
+        switch (err.name) {
+          case 'NotAllowedError':
+          case 'SecurityError':
+            setError('Permission denied. Please allow camera access in your browser settings and reload the page.')
+            break
+          case 'NotFoundError':
+          case 'OverconstrainedError':
+            setError('No usable camera was found. Connect a webcam or try using your iPhone via Continuity Camera.')
+            break
+          case 'NotReadableError':
+            setError('The camera is in use by another application. Close other apps that use the camera and try again.')
+            break
+          default:
+            setError('Unable to access the camera. Please check permissions, ensure HTTPS, and try again.')
+        }
+      } else {
+        setError('Unable to access the camera due to an unexpected error.')
+      }
+
+      setCameraStarted(false)
     } finally {
       setIsLoading(false)
     }
-  }, [])
+  }, [setError, setIsLoading, setCameraStarted, setStream])
 
   const stopCamera = useCallback(() => {
     if (streamRef.current) {
@@ -128,8 +183,8 @@ export function CameraView({
 
   if (!autoStart && !cameraStarted && !capturedImage) {
     return (
-      <div className="space-y-4">
-        <div className="bg-muted relative flex h-32 items-center justify-center overflow-hidden rounded-lg">
+      <div className="flex flex-col">
+        <div className="bg-muted relative flex h-32 items-center justify-center overflow-hidden rounded-lg p-6">
           <div className="text-center">
             <Camera className="text-muted-foreground mx-auto mb-2 h-8 w-8" />
             <p className="text-muted-foreground mb-3 text-xs">Use camera to scan X-ray image</p>
@@ -148,7 +203,7 @@ export function CameraView({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col space-y-4">
       <div className="relative aspect-[4/3] overflow-hidden rounded-lg bg-black">
         {isLoading && !capturedImage && (
           <div className="bg-muted absolute inset-0 flex items-center justify-center">
@@ -184,26 +239,29 @@ export function CameraView({
         )}
       </div>
 
-      {capturedImage ? (
-        <Button
-          onClick={onClear}
-          size="lg"
-          className="w-full bg-transparent"
-          variant="outline"
-        >
-          <RotateCcw className="mr-2 h-5 w-5" />
-          Clear & Retake
-        </Button>
-      ) : (
-        <Button
-          onClick={captureImage}
-          disabled={disabled || isLoading || !stream}
-          size="lg"
-          className="w-full"
-        >
-          <Camera className="mr-2 h-5 w-5" />
-          {disabled ? 'Processing...' : 'Capture Image'}
-        </Button>
+      {stream && !capturedImage && (
+        <div className="flex gap-2">
+          <Button
+            onClick={captureImage}
+            disabled={disabled || isLoading}
+            size="lg"
+            className="flex-1"
+          >
+            <Camera className="mr-2 h-5 w-5" />
+            {disabled ? 'Processing...' : 'Capture Image'}
+          </Button>
+          <Button
+            onClick={() => {
+              stopCamera()
+              setCameraStarted(false)
+            }}
+            size="lg"
+            variant="destructive"
+            className="flex-1"
+          >
+            Close Camera
+          </Button>
+        </div>
       )}
 
       <canvas
