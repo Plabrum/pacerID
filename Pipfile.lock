@@ -1,11 +1,11 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "642a644d8908808987556dbef3fbfcf718139a8f6139e1f9d4ad5028ea2fd803"
+            "sha256": "c90a782741290cb5bcc3a8e6ed59b142a444642dc82ff4dc47b206ef1417e5b5"
         },
         "pipfile-spec": 6,
         "requires": {
-            "python_version": "3.12"
+            "python_version": "3.11"
         },
         "sources": [
             {
@@ -745,7 +745,7 @@
                 "sha256:d38c6885f5e9673c11a61ccec5cad7c032ab97340718d26b17794137f398b780",
                 "sha256:eca7672adca32727bbf5c0f1caf398fc17bbe222f2a684c7a2caea6fc6767203"
             ],
-            "markers": "sys_platform == 'linux'",
+            "markers": "platform_system == 'Linux'",
             "version": "==2.14.0"
         },
         "typing-extensions": {
@@ -1735,7 +1735,7 @@
                 "sha256:29572ef2b1f17581046b3a2227d5c611fb25ec70ca1ba8554b24b0e69331a484",
                 "sha256:d443872c98d677bf60f6a1f2f8c1cb748e8fe762d2bf9d3148b5599295b0fc4f"
             ],
-            "markers": "python_version >= '3.8'",
+            "markers": "python_version >= '3.8' and platform_system == 'Darwin' and platform_machine == 'arm64'",
             "version": "==25.0"
         },
         "parso": {
