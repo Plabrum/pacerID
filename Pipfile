@@ -8,7 +8,7 @@ uvicorn = "*"
 litestar = { version = "*", extras = ["standard"] }
 pillow = "*"
 numpy = "*"
-ai-edge-litert = "*"
+ai-edge-litert = "==1.3.0"
 
 [dev-packages]
 tensorflow = { version = "==2.17.*", markers = "platform_system == 'Darwin' and platform_machine == 'arm64'" }

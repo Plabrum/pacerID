@@ -1,23 +1,24 @@
-"use client"
+'use client'
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Loader2, AlertCircle, Github, Mail } from "lucide-react"
-import { CameraView } from "@/components/camera-view"
-import { MedicalDeviceCard } from "@/components/medical-device-card"
-import { ThemeToggle } from "@/components/theme-toggle"
+import { useState } from 'react'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Loader2, AlertCircle, Github, Mail } from 'lucide-react'
+import { CameraView } from '@/components/camera-view'
+import { MedicalDeviceCard } from '@/components/medical-device-card'
+import { ThemeToggle } from '@/components/theme-toggle'
 
-import { FileUpload } from "@/components/file-upload"
-import { useDefaultServicePostApiClassify } from "../openapi/queries"
+import { FileUpload } from '@/components/file-upload'
+import { useDefaultServicePostApiClassify } from '../openapi/queries'
+import { useIsMobile } from '@/lib/hooks/use-mobile'
 
 export default function MedicalDeviceScanner() {
   const [capturedImage, setCapturedImage] = useState<string | null>(null)
 
   // React Query mutation - let it handle all state
   const classifyMutation = useDefaultServicePostApiClassify({
-    retry: 1,
+    retry: 1
   })
 
   const { isPending, error, data: results, mutateAsync, reset } = classifyMutation
@@ -28,8 +29,8 @@ export default function MedicalDeviceScanner() {
     setCapturedImage(imageUrl)
 
     await mutateAsync({
-      formData: { image: imageBlob}, // <-- object matching ImageForm, not FormData
-    });
+      formData: { image: imageBlob } // <-- object matching ImageForm, not FormData
+    })
   }
 
   const handleReset = () => {
@@ -41,44 +42,73 @@ export default function MedicalDeviceScanner() {
     reset()
   }
 
+  const isMobile = useIsMobile()
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-4 max-w-7xl">
+    <div className="bg-background min-h-screen">
+      <div className="container mx-auto max-w-7xl px-4 py-4">
         {/* Header */}
-        <div className="text-center mb-4">
-          <div className="flex justify-end mb-2">
+        <div className="mb-4 text-center">
+          <div className="mb-2 flex justify-end">
             <ThemeToggle />
           </div>
-          <h1 className="text-3xl font-bold text-foreground mb-1">Pacer ID</h1>
+          <h1 className="text-foreground mb-1 text-3xl font-bold">Pacer ID</h1>
           <p className="text-muted-foreground">Identify device from X-ray images</p>
         </div>
 
         {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Left Column - Camera */}
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          {/* Left Column - Adaptive based on device */}
           <div className="space-y-4">
-            {/* Camera Section */}
-            <div>
-              {!capturedImage && (
-                <p className="text-sm text-muted-foreground mb-3">
-                  Position your X-ray image in the camera view and tap capture
-                </p>
-              )}
-              <CameraView
-                onImageCaptureAction={handleImageCapture}
-                disabled={isPending}
-                capturedImage={capturedImage}
-                onClear={handleReset}
-              />
-            </div>
-
-            {/* File Upload Section */}
-            {!capturedImage && (
-              <FileUpload
-                onFileUploadAction={handleImageCapture}
-                disabled={isPending}
-              />
+            {isMobile ? (
+              <>
+                {/* Mobile: Camera first (primary) */}
+                <div>
+                  {!capturedImage && (
+                    <p className="text-muted-foreground mb-3 text-sm">
+                      Position your X-ray image in the camera view and tap capture
+                    </p>
+                  )}
+                  <CameraView
+                    onImageCaptureAction={handleImageCapture}
+                    disabled={isPending}
+                    capturedImage={capturedImage}
+                    onClear={handleReset}
+                    autoStart={true}
+                  />
+                </div>
+                {/* Mobile: File upload second (secondary) */}
+                {!capturedImage && (
+                  <div className="origin-top scale-90">
+                    <FileUpload
+                      onFileUploadAction={handleImageCapture}
+                      disabled={isPending}
+                    />
+                  </div>
+                )}
+              </>
+            ) : (
+              <>
+                {/* Desktop: File upload first (primary, larger) */}
+                {!capturedImage && (
+                  <div className="border-primary/20 rounded-lg border-2 p-1">
+                    <FileUpload
+                      onFileUploadAction={handleImageCapture}
+                      disabled={isPending}
+                    />
+                  </div>
+                )}
+                {/* Desktop: Camera second (secondary) */}
+                <div className={!capturedImage ? 'origin-top scale-90' : ''}>
+                  <CameraView
+                    onImageCaptureAction={handleImageCapture}
+                    disabled={isPending}
+                    capturedImage={capturedImage}
+                    onClear={handleReset}
+                    autoStart={false}
+                  />
+                </div>
+              </>
             )}
 
             {/* Instructions */}
@@ -87,27 +117,27 @@ export default function MedicalDeviceScanner() {
                 <CardHeader className="pb-3">
                   <CardTitle className="text-lg">How to Use</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3 text-sm text-muted-foreground">
+                <CardContent className="text-muted-foreground space-y-3 text-sm">
                   <div className="flex gap-3">
-                    <span className="flex-shrink-0 w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xs font-medium">
+                    <span className="bg-primary text-primary-foreground flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-xs font-medium">
                       1
                     </span>
                     <span>Allow camera access when prompted</span>
                   </div>
                   <div className="flex gap-3">
-                    <span className="flex-shrink-0 w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xs font-medium">
+                    <span className="bg-primary text-primary-foreground flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-xs font-medium">
                       2
                     </span>
                     <span>Position your X-ray image clearly in the camera view or upload a file</span>
                   </div>
                   <div className="flex gap-3">
-                    <span className="flex-shrink-0 w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xs font-medium">
+                    <span className="bg-primary text-primary-foreground flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-xs font-medium">
                       3
                     </span>
                     <span>Tap the capture button to take a photo</span>
                   </div>
                   <div className="flex gap-3">
-                    <span className="flex-shrink-0 w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xs font-medium">
+                    <span className="bg-primary text-primary-foreground flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-xs font-medium">
                       4
                     </span>
                     <span>Wait for AI analysis to identify medical devices</span>
@@ -123,7 +153,7 @@ export default function MedicalDeviceScanner() {
             {isPending && (
               <Card>
                 <CardContent className="pt-6">
-                  <div className="flex items-center justify-center gap-3 text-muted-foreground">
+                  <div className="text-muted-foreground flex items-center justify-center gap-3">
                     <Loader2 className="h-5 w-5 animate-spin" />
                     <span>Analyzing image...</span>
                   </div>
@@ -146,7 +176,10 @@ export default function MedicalDeviceScanner() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h2 className="text-xl font-semibold">Identification Result</h2>
-                  <Button variant="outline" onClick={handleReset}>
+                  <Button
+                    variant="outline"
+                    onClick={handleReset}
+                  >
                     Scan Another
                   </Button>
                 </div>
@@ -160,7 +193,7 @@ export default function MedicalDeviceScanner() {
               <div className="hidden lg:block">
                 <Card className="border-dashed">
                   <CardContent className="pt-6">
-                    <div className="text-center text-muted-foreground">
+                    <div className="text-muted-foreground text-center">
                       <p className="text-sm">Results will appear here after capturing an image</p>
                     </div>
                   </CardContent>
@@ -174,24 +207,24 @@ export default function MedicalDeviceScanner() {
         <div className="mt-8">
           <Card>
             <CardContent className="pt-6">
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 text-sm text-muted-foreground">
+              <div className="text-muted-foreground flex flex-col items-center justify-center gap-4 text-sm sm:flex-row">
                 <div className="flex items-center gap-2">
                   <Github className="h-4 w-4" />
                   <a
                     href="https://github.com/Plabrum/pacerID"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="hover:text-foreground transition-colors underline"
+                    className="hover:text-foreground underline transition-colors"
                   >
                     View on GitHub
                   </a>
                 </div>
-                <div className="hidden sm:block text-muted-foreground/50">•</div>
+                <div className="text-muted-foreground/50 hidden sm:block">•</div>
                 <div className="flex items-center gap-2">
                   <Mail className="h-4 w-4" />
                   <a
                     href="mailto:philip.labrum@gmail.com"
-                    className="hover:text-foreground transition-colors underline"
+                    className="hover:text-foreground underline transition-colors"
                   >
                     philip.labrum@gmail.com
                   </a>
