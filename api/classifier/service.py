@@ -4,8 +4,8 @@ from pathlib import Path
 from typing import List
 
 import numpy as np
+from ai_edge_litert.interpreter import Interpreter
 from PIL import Image
-from tflite_runtime.interpreter import Interpreter
 
 from api.types import ClassScore
 
