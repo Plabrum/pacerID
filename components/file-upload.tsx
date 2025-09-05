@@ -1,9 +1,9 @@
-"use client"
+'use client'
 
-import type React from "react"
-import { useState, useRef, useCallback } from "react"
-import { Button } from "@/components/ui/button"
-import { Upload } from "lucide-react"
+import type React from 'react'
+import { useState, useRef, useCallback } from 'react'
+import { Button } from '@/components/ui/button'
+import { Upload } from 'lucide-react'
 
 interface FileUploadProps {
   onFileUploadAction: (imageBlob: Blob) => void
@@ -16,15 +16,15 @@ export function FileUpload({ onFileUploadAction, disabled = false }: FileUploadP
 
   const handleFileUpload = useCallback(
     (file: File | undefined) => {
-      if (!file || !file.type.startsWith("image/")) {
+      if (!file || !file.type.startsWith('image/')) {
         return
       }
 
-      // Convert file to blob and call onFileUpload
+      // Convert file to blob and call onFileUploadAction
       const blob = new Blob([file], { type: file.type })
       onFileUploadAction(blob)
     },
-    [onFileUploadAction],
+    [onFileUploadAction]
   )
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -42,37 +42,54 @@ export function FileUpload({ onFileUploadAction, disabled = false }: FileUploadP
       e.preventDefault()
       setIsDragOver(false)
 
-      const files = e.dataTransfer?.files
-      handleFileUpload(files?.[0])
+      const files = Array.from(e.dataTransfer.files)
+      if (files.length > 0) {
+        handleFileUpload(files[0])
+      }
     },
-    [handleFileUpload],
+    [handleFileUpload]
   )
 
   const handleFileInputChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const files = e.target.files
-      handleFileUpload(files?.[0])
+      if (files && files.length > 0) {
+        handleFileUpload(files[0])
+      }
     },
-    [handleFileUpload],
+    [handleFileUpload]
   )
 
   return (
-    <div className="relative">
+    <div className="relative h-full">
       <div
-        className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
-          isDragOver ? "border-primary bg-primary/5" : "border-muted-foreground/25 hover:border-muted-foreground/50"
+        className={`flex h-full items-center justify-center rounded-lg border-2 border-dashed p-6 text-center transition-colors ${
+          isDragOver ? 'border-primary bg-primary/5' : 'border-muted-foreground/25 hover:border-muted-foreground/50'
         }`}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
       >
-        <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-        <p className="text-sm text-muted-foreground mb-2">Drag and drop an X-ray image here, or</p>
-        <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} disabled={disabled}>
-          Browse Files
-        </Button>
+        <div>
+          <Upload className="text-muted-foreground mx-auto mb-2 h-8 w-8" />
+          <p className="text-muted-foreground mb-2 text-sm">Drag and drop an X-ray image here, or</p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={disabled}
+          >
+            Browse Files
+          </Button>
+        </div>
       </div>
-      <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileInputChange} className="hidden" />
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        onChange={handleFileInputChange}
+        className="hidden"
+      />
     </div>
   )
 }

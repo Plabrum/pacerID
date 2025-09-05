@@ -14,6 +14,7 @@ import { useDefaultServicePostApiClassify } from '../openapi/queries'
 import { useIsMobile } from '@/lib/hooks/use-mobile'
 
 export default function MedicalDeviceScanner() {
+  const isMobile = useIsMobile()
   const [capturedImage, setCapturedImage] = useState<string | null>(null)
 
   // React Query mutation - let it handle all state
@@ -42,8 +43,6 @@ export default function MedicalDeviceScanner() {
     reset()
   }
 
-  const isMobile = useIsMobile()
-
   return (
     <div className="bg-background min-h-screen">
       <div className="container mx-auto max-w-7xl px-4 py-4">
@@ -58,59 +57,24 @@ export default function MedicalDeviceScanner() {
 
         {/* Main Content */}
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          {/* Left Column - Adaptive based on device */}
-          <div className="space-y-4">
-            {isMobile ? (
-              <>
-                {/* Mobile: Camera first (primary) */}
-                <div>
-                  {!capturedImage && (
-                    <p className="text-muted-foreground mb-3 text-sm">
-                      Position your X-ray image in the camera view and tap capture
-                    </p>
-                  )}
-                  <CameraView
-                    onImageCaptureAction={handleImageCapture}
-                    disabled={isPending}
-                    capturedImage={capturedImage}
-                    onClear={handleReset}
-                    autoStart={true}
-                  />
-                </div>
-                {/* Mobile: File upload second (secondary) */}
-                {!capturedImage && (
-                  <div className="origin-top scale-90">
-                    <FileUpload
-                      onFileUploadAction={handleImageCapture}
-                      disabled={isPending}
-                    />
-                  </div>
-                )}
-              </>
-            ) : (
-              <>
-                {/* Desktop: File upload first (primary, larger) */}
-                {!capturedImage && (
-                  <div className="border-primary/20 rounded-lg border-2 p-1">
-                    <FileUpload
-                      onFileUploadAction={handleImageCapture}
-                      disabled={isPending}
-                    />
-                  </div>
-                )}
-                {/* Desktop: Camera second (secondary) */}
-                <div className={!capturedImage ? 'origin-top scale-90' : ''}>
-                  <CameraView
-                    onImageCaptureAction={handleImageCapture}
-                    disabled={isPending}
-                    capturedImage={capturedImage}
-                    onClear={handleReset}
-                    autoStart={false}
-                  />
-                </div>
-              </>
+          {/* Left Column - Input Methods */}
+          <div className="space-y-6">
+            {!capturedImage && (
+              <div className="h-48">
+                <FileUpload
+                  onFileUploadAction={handleImageCapture}
+                  disabled={isPending}
+                />
+              </div>
             )}
 
+            <CameraView
+              onImageCaptureAction={handleImageCapture}
+              disabled={isPending}
+              capturedImage={capturedImage}
+              onClear={handleReset}
+              autoStart={isMobile}
+            />
             {/* Instructions */}
             {!results && !isPending && !capturedImage && (
               <Card>
