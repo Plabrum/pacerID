@@ -7,16 +7,16 @@ name = "pypi"
 datetime = "*"
 python-dotenv = "*"
 requests = "*"
-pydantic = "*"
 uvicorn = "*"
 litestar = {version = "*", extras = ["standard"]}
-tensorflow = "*"
+numpy = "*"
 
 [dev-packages]
 ipykernel = "*"
 types-tensorflow = "*"
 tensorflow-macos = "*"
 tensorflow-metal = "*"
+tensorflow = "*"
 
 [requires]
 python_version = "3.12"

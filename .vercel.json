@@ -1,0 +1,13 @@
+{
+  "functions": {
+    "api/index.py": {
+      "includeFiles": "api/classifier/models/*.tflite",
+      "excludeFiles": [
+        "api/classifier/models/**/*.keras",
+        "api/classifier/training/**",
+        "api/classifier/checkpoints/**",
+        "api/classifier/data/**"
+      ]
+    }
+  }
+}
